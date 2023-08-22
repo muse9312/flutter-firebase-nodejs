@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:client/login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,19 +17,20 @@ class _SignUpViewState extends State<SignUpView> {
 
   Future<void> sendData() async {
     final response = await http.post(
-      Uri.parse('http://172.30.1.56:8080'),
+      Uri.parse('${dotenv.env['SERVER_ADDRESS']}/signup'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: {
+      body: json.encode({
         'email': emailController.text,
         'password': passwordController.text,
-      },
+      }),
     );
 
     if (response.statusCode == 200) {
-      print("Data sent successfully");
-      Navigator.pushNamed(context, '/login');
+      print("회원가입 성공");
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => LoginView(context)));
     } else {
       // If the server did not return a 200 OK response,
       // throw an exception.
@@ -44,6 +46,7 @@ class _SignUpViewState extends State<SignUpView> {
   @override
   void initState() {
     super.initState();
+    dotenv.load();
   }
 
   @override
@@ -125,7 +128,7 @@ class _SignUpViewState extends State<SignUpView> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  FloatingActionButton(
+                                  OutlinedButton(
                                     onPressed: () {
                                       sendData();
                                     },

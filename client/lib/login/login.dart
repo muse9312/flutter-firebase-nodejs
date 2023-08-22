@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:client/signup/signup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class LoginView extends StatefulWidget {
@@ -12,25 +13,34 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  // final _formKey = GlobalKey<FormState>();
+  late bool _loginCheck = false;
 
-  // late String _email;
-  // late String _password;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  // // 서버에 로그인 요청을 보냅니다.
-  // Future<void> _loginRequest(String email, String password) async {
-  //   final url = 'http://localhost:8080/login'; // 실제 서버 주소로 변경
-  //   final response = await http
-  //       .post(url as Uri, body: {'email': email, 'password': password});
+  Future<void> sendData() async {
+    final res = await http.post(
+      Uri.parse('${dotenv.env['SERVER_ADDRESS']}/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: json.encode({
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
 
-  //   if (response.statusCode == 200) {
-  //     // 로그인이 성공한 경우 처리
-  //     print(jsonDecode(response.body));
-  //   } else {
-  //     // 로그인이 실패한 경우 처리
-  //     print("Error with status code: ${response.statusCode}");
-  //   }
-  // }
+    if (res.statusCode == 200) {
+      print("로그인 성공");
+      setState(() {
+        _loginCheck = true;
+      });
+    } else {
+      // If the server did not return a 200 OK response,
+      // throw an exception.
+      throw Exception('Failed to send data');
+    }
+  }
 
   List<Color> colors = [
     Colors.green,
@@ -40,10 +50,13 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
+    dotenv.load();
   }
 
   @override
   void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -80,85 +93,81 @@ class _LoginViewState extends State<LoginView> {
                   child: Padding(
                     padding: EdgeInsets.only(
                         top: 20, right: 14, left: 14, bottom: 14),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Form(
-                          // key: _formKey,
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: "Email",
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                  ),
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (girilenEmail) {
-                                    return null;
-                                  },
-                                  onSaved: (girilenEmail) {
-                                    setState(() {});
-                                  },
-                                ),
-                                Padding(
-                                  padding:
-                                      EdgeInsets.only(top: 20, bottom: 68.0),
-                                  child: TextFormField(
-                                    obscureText: true,
-                                    decoration: InputDecoration(
-                                      labelText: "Password",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50)),
-                                    ),
-                                    validator: (girilenSifre) {
-                                      return null;
-                                    },
-                                    onSaved: (girilenSifre) {
-                                      setState(() {});
-                                    },
-                                  ),
-                                ),
-                                Row(
+                    child: _loginCheck
+                        ? Row(
+                            children: [
+                              Text("로그인 성공"),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    OutlinedButton(
-                                      onPressed: () {},
-                                      child: Text(
-                                        "login",
-                                        style: TextStyle(
-                                            color: Colors.green.shade100),
+                                  children: <Widget>[
+                                    TextField(
+                                      controller: emailController,
+                                      decoration: InputDecoration(
+                                        labelText: "Email",
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(50)),
+                                      ),
+                                      keyboardType: TextInputType.emailAddress,
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          top: 20, bottom: 68.0),
+                                      child: TextField(
+                                        controller: passwordController,
+                                        obscureText: true,
+                                        decoration: InputDecoration(
+                                          labelText: "Password",
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(50)),
+                                        ),
                                       ),
                                     ),
-                                    SizedBox(width: 12),
-                                    OutlinedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    SignUpView(context)));
-                                      },
-                                      child: Text(
-                                        "SignUp",
-                                        style: TextStyle(
-                                            color: Colors.indigo.shade100),
-                                      ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        OutlinedButton(
+                                          onPressed: () {
+                                            sendData();
+                                          },
+                                          child: Text(
+                                            "login",
+                                            style: TextStyle(
+                                                color: Colors.green.shade100),
+                                          ),
+                                        ),
+                                        SizedBox(width: 12),
+                                        OutlinedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        SignUpView(context)));
+                                          },
+                                          child: Text(
+                                            "SignUp",
+                                            style: TextStyle(
+                                                color: Colors.indigo.shade100),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],
