@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:client/signup/signup.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class LoginView extends StatefulWidget {
   const LoginView(BuildContext context, {super.key});
@@ -9,7 +12,25 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final _formKey = GlobalKey<FormState>();
+  // final _formKey = GlobalKey<FormState>();
+
+  // late String _email;
+  // late String _password;
+
+  // // 서버에 로그인 요청을 보냅니다.
+  // Future<void> _loginRequest(String email, String password) async {
+  //   final url = 'http://localhost:8080/login'; // 실제 서버 주소로 변경
+  //   final response = await http
+  //       .post(url as Uri, body: {'email': email, 'password': password});
+
+  //   if (response.statusCode == 200) {
+  //     // 로그인이 성공한 경우 처리
+  //     print(jsonDecode(response.body));
+  //   } else {
+  //     // 로그인이 실패한 경우 처리
+  //     print("Error with status code: ${response.statusCode}");
+  //   }
+  // }
 
   List<Color> colors = [
     Colors.green,
@@ -18,7 +39,6 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -38,7 +58,7 @@ class _LoginViewState extends State<LoginView> {
               children: [
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 4,
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       "Login",
                       style: TextStyle(
@@ -50,7 +70,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 Container(
                   height: MediaQuery.of(context).size.height / (4 / 3),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(60),
@@ -58,15 +78,15 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.only(
+                    padding: EdgeInsets.only(
                         top: 20, right: 14, left: 14, bottom: 14),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Form(
-                          key: _formKey,
+                          // key: _formKey,
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: EdgeInsets.all(8.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -87,8 +107,8 @@ class _LoginViewState extends State<LoginView> {
                                   },
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 20, bottom: 68.0),
+                                  padding:
+                                      EdgeInsets.only(top: 20, bottom: 68.0),
                                   child: TextFormField(
                                     obscureText: true,
                                     decoration: InputDecoration(
@@ -116,7 +136,7 @@ class _LoginViewState extends State<LoginView> {
                                             color: Colors.green.shade100),
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(width: 12),
                                     OutlinedButton(
                                       onPressed: () {
                                         Navigator.push(

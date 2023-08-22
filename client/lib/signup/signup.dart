@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class SignUpView extends StatefulWidget {
   const SignUpView(BuildContext context, {super.key});
@@ -8,7 +11,30 @@ class SignUpView extends StatefulWidget {
 }
 
 class _SignUpViewState extends State<SignUpView> {
-  final _formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  Future<void> sendData() async {
+    final response = await http.post(
+      Uri.parse('http://172.30.1.56:8080'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: {
+        'email': emailController.text,
+        'password': passwordController.text,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("Data sent successfully");
+      Navigator.pushNamed(context, '/login');
+    } else {
+      // If the server did not return a 200 OK response,
+      // throw an exception.
+      throw Exception('Failed to send data');
+    }
+  }
 
   List<Color> colors = [
     Colors.green,
@@ -17,12 +43,13 @@ class _SignUpViewState extends State<SignUpView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -62,75 +89,55 @@ class _SignUpViewState extends State<SignUpView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Form(
-                          key: _formKey,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                TextFormField(
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              // 아이디 입력
+                              TextField(
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  labelText: "Email",
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(50)),
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 20, bottom: 20),
+                                child:
+
+                                    // 패스워드 입력
+                                    TextField(
+                                  controller: passwordController,
+                                  obscureText: true, // 자판 안보이게
                                   decoration: InputDecoration(
-                                    labelText: "Email",
+                                    labelText: "Password",
                                     border: OutlineInputBorder(
                                         borderRadius:
                                             BorderRadius.circular(50)),
                                   ),
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (girilenEmail) {
-                                    return null;
-                                  },
-                                  onSaved: (girilenEmail) {
-                                    setState(() {});
-                                  },
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 20, bottom: 20),
-                                  child: TextFormField(
-                                    obscureText: true,
-                                    decoration: InputDecoration(
-                                      labelText: "Password",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50)),
-                                    ),
-                                    validator: (girilenSifre) {
-                                      return null;
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FloatingActionButton(
+                                    onPressed: () {
+                                      sendData();
                                     },
-                                    onSaved: (girilenSifre) {
-                                      setState(() {});
-                                    },
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 68.0),
-                                  child: TextFormField(
-                                    // obscureText: true, // 비번 안보이게
-                                    decoration: InputDecoration(
-                                      labelText: "CarNumber",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50)),
+                                    child: Text(
+                                      "rigster",
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade100),
                                     ),
                                   ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    OutlinedButton(
-                                      onPressed: () {},
-                                      child: Text(
-                                        "rigster",
-                                        style: TextStyle(
-                                            color: Colors.indigo.shade100),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
