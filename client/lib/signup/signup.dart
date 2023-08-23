@@ -32,9 +32,7 @@ class _SignUpViewState extends State<SignUpView> {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => LoginView(context)));
     } else {
-      // If the server did not return a 200 OK response,
-      // throw an exception.
-      throw Exception('Failed to send data');
+      throw Exception('로그인 실패');
     }
   }
 

@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:client/signup/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView(BuildContext context, {super.key});
@@ -14,10 +17,12 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   late bool _loginCheck = false;
+  bool _kakaoCheck = false;
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // 가회원 로그인
   Future<void> sendData() async {
     final res = await http.post(
       Uri.parse('${dotenv.env['SERVER_ADDRESS']}/login'),
@@ -39,6 +44,16 @@ class _LoginViewState extends State<LoginView> {
       // If the server did not return a 200 OK response,
       // throw an exception.
       throw Exception('Failed to send data');
+    }
+  }
+
+  Future<void> loginWithKakaoTalkRedirect() async {
+    try {
+      await AuthCodeClient.instance.authorizeWithTalk(
+        redirectUri: '${dotenv.env['KAKAO_REDIRECT_URI']}',
+      );
+    } catch (error) {
+      print('카카오톡으로 로그인 실패 $error');
     }
   }
 
@@ -94,11 +109,13 @@ class _LoginViewState extends State<LoginView> {
                     padding: EdgeInsets.only(
                         top: 20, right: 14, left: 14, bottom: 14),
                     child: _loginCheck
-                        ? Row(
-                            children: [
-                              Text("로그인 성공"),
-                            ],
-                          )
+                        ? _kakaoCheck
+                            ? Text("카카오 로그인 성공")
+                            : Row(
+                                children: [
+                                  Text("로그인 성공"),
+                                ],
+                              )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
@@ -163,6 +180,21 @@ class _LoginViewState extends State<LoginView> {
                                         ),
                                       ],
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 30),
+                                      child: Container(
+                                        child: OutlinedButton(
+                                          clipBehavior: Clip.none,
+                                          onPressed: () {
+                                            loginWithKakaoTalkRedirect();
+                                          },
+                                          child: Image.asset(
+                                            '/kakaologin_largeS_wide.png',
+                                            // width: 800,
+                                          ),
+                                        ),
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
